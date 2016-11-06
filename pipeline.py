@@ -32,5 +32,5 @@ class Pipeline(object):
 
 if __name__ == '__main__':
     p = Pipeline()
-    print p.getLine()
-    print p.popLine()
+    print(p.getLine())
+    print(p.popLine())

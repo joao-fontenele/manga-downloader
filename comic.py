@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import requests
-import time
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
 import os
+import requests
 import sys
+import time
 from math import log
 from math import ceil
-import time
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
 
 
 class Comic(object):
@@ -66,7 +65,7 @@ class Comic(object):
         driver = self.driver
         if pageUrl:
             try:
-                driver.get(pageUrl)
+                self.loadPage(pageUrl)
             except TimeoutException:
                 print('timeout on page load')
                 pass
@@ -84,6 +83,18 @@ class Comic(object):
                     fd.write(chunk)
         return resp.status_code
 
+    def fancyDownloadImage(self, url, path, fileName, chunkSize=1024):
+        status = self.downloadImage(url, path, fileName, chunkSize)
+        extension = url.split('/')[-1].split('.')[-1]
+        if status != 404 or extension not in ['jpg', 'png']:
+            return status
+
+        ivertedExtension = 'png' if extension == 'jpg' else 'jpg'
+        url = url[:-3] + ivertedExtension
+        fileName = fileName[:-3] + ivertedExtension
+
+        return self.downloadImage(url, path, fileName, chunkSize)
+
     def getImagePath(self, folder, chapterName, imgUrl):
         fileName = imgUrl.split('/')[-1]
         return (folder + chapterName + '/', fileName)
@@ -94,7 +105,7 @@ class Comic(object):
             print('loading {}'.format(url))
             driver.get(url)
         except TimeoutException:
-            pass
+            print('normal timeout on page loading {}'.format(url))
 
     def getOptmisticImgUrls(self, exampleImgUrl, pages):
         split = exampleImgUrl.split('/')
@@ -145,6 +156,7 @@ class Comic(object):
             chapterName = self.getChapterName()
         pagesUrls = self.getAllPagesUrls()
         imgUrl = self.getImageUrlFromPageUrl()
+        chapterName = chapterName.replace(':', '')
 
         # creating folders if it doesn't exist
         path, fileName = self.getImagePath(self.folder, chapterName, imgUrl)
@@ -161,14 +173,15 @@ class Comic(object):
         for i, imgUrl in enumerate(imgsUrls):
             print('    optimistic url -> {}'.format(imgUrl))
             path, fileName = self.getImagePath(self.folder, chapterName, imgUrl)
-            status = self.downloadImage(imgUrl, path, fileName)
+            status = self.fancyDownloadImage(imgUrl, path, fileName)
             seen[imgUrl] = True
 
             if status != 200:
                 imgUrl = self.getImgUrlNormally(pagesUrls[i], seen)
                 seen[imgUrl] = True
-                print('    optimistic failed! loading from page {} -> {}'.format(url, imgUrl))
-                status = self.downloadImage(imgUrl, path, fileName)
+                print('    optimistic failed! loading from page {} -> {}'.format(pagesUrls[i], imgUrl))
+                path, fileName = self.getImagePath(self.folder, chapterName, imgUrl)
+                status = self.fancyDownloadImage(imgUrl, path, fileName)
                 if status != 200:
                     errors.append(imgUrl)
                     print('    status_code for url: {} is {}'.format(imgUrl, status))
