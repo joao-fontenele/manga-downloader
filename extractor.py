@@ -30,12 +30,12 @@ def saveLinks(fname, links):
     with open(fname, 'w') as fout:
         fout.write('#addr;title\n')
         for link in links:
-            # print link
+            # print(link)
             fout.write('{};{}\n'.format(link.addr, link.title))
 
 def extractLinksToFile(html, fname):
     saveLinks(fname, extractLinks(html))
 
 if __name__ == '__main__':
-    html = open('examples/ps.html').read()
-    extractLinksToFile(html, 'examples/ps.csv')
+    html = open('examples/ps.html').read() # TODO cmd line options
+    extractLinksToFile(html, 'examples/ps.txt')
