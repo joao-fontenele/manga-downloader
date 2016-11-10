@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding: utf-8
+# -*- coding: utf-8 -*-
 
 import os
 import requests
@@ -167,7 +167,7 @@ class Comic(object):
 
         errors = []
         seen = dict()
-        print('downloading chapter: {}'.format(chapterName))
+        print('downloading chapter: {}'.format(chapterName.encode('ascii', 'ignore')))
         print('  found {} pages'.format(len(pagesUrls)))
 
         for i, imgUrl in enumerate(imgsUrls):

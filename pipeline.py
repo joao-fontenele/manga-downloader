@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# coding: utf-8
+# -*- coding: utf-8 -*-
 
 class Pipeline(object):
     def __init__(self, pipeFile='pipeline.csv'):
