@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from comic import Comic
+from logger import Logger
 from pipeline import Pipeline
 import argparse
 import time
 import traceback
 
+
+logger = Logger()
 
 def createParser():
     description = """
@@ -40,9 +43,11 @@ def downloadChapter(comic, url, title=None, retries=5):
     while count <= retries:
         try:
             comic.downloadChapter(firstPageUrl=url)
+        except KeyboardInterrupt:
+            return True
         except Exception as e:
             traceback.print_exc()
-            print('retrying {}/{}, for {}'.format(count, retries, prettyChName))
+            logger.log('retrying {}/{}, for {}'.format(count, retries, prettyChName))
             count += 1
         else:
             break
@@ -53,8 +58,8 @@ def main():
     parser = createParser()
     args = parser.parse_args()
 
-    print('saving to folder: {}\n'.format(args.folder))
-    comic = Comic(args.folder)
+    logger.log('saving to folder: {}\n'.format(args.folder))
+    comic = Comic(args.folder, logger=Logger())
 
     if args.chUrl:
         downloadChapter(comic, args.chUrl)
@@ -62,17 +67,18 @@ def main():
         pipe = Pipeline(args.pipeFile)
 
         line = pipe.getLine()
-        while line:
+        end = False
+        while not end and line:
             url, title = line.split(';')
             title = title.strip()
-            downloadChapter(comic=comic, url=url, title=title)
-            print('done downloading this chapter\n')
+            end = downloadChapter(comic=comic, url=url, title=title)
+            logger.log('done downloading this chapter\n')
             pipe.popLine()
             line = pipe.getLine()
 
-    print('\nno more work to do\n')
+    logger.log('\nno more work to do\n')
 
-    c.close()
+    comic.close()
 
 if __name__ == '__main__':
     main()

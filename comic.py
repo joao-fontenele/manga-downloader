@@ -15,10 +15,11 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 
 class Comic(object):
-    def __init__(self, folder, pageLoadTimeout=90):
+    def __init__(self, folder, logger, pageLoadTimeout=90):
         self.folder = folder
         self.driver = None
         self.pageLoadTimeout = pageLoadTimeout
+        self.logger = logger
 
     def locateElement(self, cssSelector, waitTime=3):
         wait = WebDriverWait(self.driver, waitTime)
@@ -67,7 +68,7 @@ class Comic(object):
             try:
                 self.loadPage(pageUrl)
             except TimeoutException:
-                print('timeout on page load')
+                self.logger.log('timeout on page load')
                 pass
 
         img = self.locateElement('#comic_page')
@@ -102,10 +103,10 @@ class Comic(object):
     def loadPage(self, url):
         driver = self.driver
         try:
-            print('loading {}'.format(url))
+            self.logger.log('loading {}'.format(url))
             driver.get(url)
         except TimeoutException:
-            print('normal timeout on page loading {}'.format(url))
+            self.logger.log('normal timeout on page loading {}'.format(url))
 
     def getOptmisticImgUrls(self, exampleImgUrl, pages):
         split = exampleImgUrl.split('/')
@@ -167,11 +168,11 @@ class Comic(object):
 
         errors = []
         seen = dict()
-        print('downloading chapter: {}'.format(chapterName.encode('ascii', 'ignore')))
-        print('  found {} pages'.format(len(pagesUrls)))
+        self.logger.log('downloading chapter: {}'.format(chapterName.encode('ascii', 'ignore')))
+        self.logger.log('  found {} pages'.format(len(pagesUrls)))
 
         for i, imgUrl in enumerate(imgsUrls):
-            print('    optimistic url -> {}'.format(imgUrl))
+            self.logger.log('    optimistic url -> {}'.format(imgUrl))
             path, fileName = self.getImagePath(self.folder, chapterName, imgUrl)
             status = self.fancyDownloadImage(imgUrl, path, fileName)
             seen[imgUrl] = True
@@ -179,17 +180,17 @@ class Comic(object):
             if status != 200:
                 imgUrl = self.getImgUrlNormally(pagesUrls[i], seen)
                 seen[imgUrl] = True
-                print('    optimistic failed! loading from page {} -> {}'.format(pagesUrls[i], imgUrl))
+                self.logger.log('    optimistic failed! loading from page {} -> {}'.format(pagesUrls[i], imgUrl))
                 path, fileName = self.getImagePath(self.folder, chapterName, imgUrl)
                 status = self.fancyDownloadImage(imgUrl, path, fileName)
                 if status != 200:
                     errors.append(imgUrl)
-                    print('    status_code for url: {} is {}'.format(imgUrl, status))
+                    self.logger.log('    status_code for url: {} is {}'.format(imgUrl, status))
 
         if errors:
-            print('  there were some errors in the following urls')
+            self.logger.log('  there were some errors in the following urls')
             for e in errors:
-                print('    {}'.format(e))
+                self.logger.log('    {}'.format(e))
 
 
 def test():
