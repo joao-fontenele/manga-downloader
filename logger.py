@@ -3,6 +3,7 @@
 
 class Logger(object):
     def __init__(self, logPath='log.txt'):
+        # TODO instead should create the file in case it's not already
         self.fout = open(logPath, 'r+')
 
     def log(self, message):
