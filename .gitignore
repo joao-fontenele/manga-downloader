@@ -5,3 +5,5 @@
 *.old
 *.html
 Downloads/*
+extractor/*
+log.*
