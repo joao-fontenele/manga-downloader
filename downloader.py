@@ -69,7 +69,7 @@ def main():
         line = pipe.getLine()
         end = False
         while line:
-            url, title = line.split(';')
+            mangaName, url, title = line.split(';')
             title = title.strip()
             end = downloadChapter(comic=comic, url=url, title=title)
 
