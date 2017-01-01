@@ -68,10 +68,14 @@ def main():
 
         line = pipe.getLine()
         end = False
-        while not end and line:
+        while line:
             url, title = line.split(';')
             title = title.strip()
             end = downloadChapter(comic=comic, url=url, title=title)
+
+            if end:
+                break
+
             logger.log('done downloading this chapter\n')
             pipe.popLine()
             line = pipe.getLine()
