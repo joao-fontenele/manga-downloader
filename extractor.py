@@ -32,7 +32,7 @@ def extractLinks(html):
 
 def saveLinks(fname, links, mangaName):
     with open(fname, 'w') as fout:
-        fout.write('#addr;title\n')
+        fout.write('#manga;addr;title\n')
         for link in links:
             fout.write('{};{};{}\n'.format(mangaName, link.addr, link.title))
 
