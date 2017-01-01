@@ -4,6 +4,7 @@
 *.png
 *.old
 *.html
+*.cfg
 Downloads/*
 extractor/*
 log.*

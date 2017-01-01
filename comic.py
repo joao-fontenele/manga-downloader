@@ -7,6 +7,7 @@ import sys
 import time
 from math import log
 from math import ceil
+from ConfigParser import ConfigParser
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
@@ -15,17 +16,36 @@ from selenium.webdriver.support.wait import WebDriverWait
 
 
 class Comic(object):
-    def __init__(self, folder, logger, pageLoadTimeout=90):
+    def __init__(self, folder, logger, configPath='config.cfg', pageLoadTimeout=90):
         self.folder = folder
         self.driver = None
         self.pageLoadTimeout = pageLoadTimeout
         self.logger = logger
 
+        config = ConfigParser()
+        if config.read(configPath):
+            self.user = config.get('User Login', 'user')
+            self.pw = config.get('User Login', 'pw')
+        else:
+             self.setupConfig(configPath)
+
+    def setupConfig(self, configPath):
+        self.user = raw_input('username: ')
+        self.pw = raw_input('password: ')
+
+        config = ConfigParser()
+        config.add_section('User Login')
+
+        config.set('User Login', 'user', self.user)
+        config.set('User Login', 'pw', self.pw)
+
+        config.write(open(configPath, 'w'))
+
     def locateElement(self, cssSelector, waitTime=3):
         wait = WebDriverWait(self.driver, waitTime)
         return wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, cssSelector)))
 
-    def login(self, loginUrl='https://bato.to/forums/index.php?app=core&module=global&section=login', user='jp_shiro', pw='IUNiuQGHq3soWXGXwQNn'):
+    def login(self, loginUrl='https://bato.to/forums/index.php?app=core&module=global&section=login'):
         self.driver = webdriver.Chrome()
         driver = self.driver
         driver.implicitly_wait(0)
@@ -34,8 +54,8 @@ class Comic(object):
 
         userInput = self.locateElement('#ips_username')
         passInput = self.locateElement('#ips_password')
-        userInput.send_keys(user)
-        passInput.send_keys(pw)
+        userInput.send_keys(self.user)
+        passInput.send_keys(self.pw)
         passInput.submit()
 
     def close(self):
